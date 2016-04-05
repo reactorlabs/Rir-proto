@@ -20,6 +20,7 @@ enum class BC : B {
   mkprom,
   set_fun,
   call,
+  check_arity,
   ret,
   ret_prom,
   add,

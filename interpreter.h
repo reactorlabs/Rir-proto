@@ -45,6 +45,9 @@ class Interpreter {
   Code* code;
   BC* pc;
   Ctx ctx;
+
+  // Registers
+  unsigned arity = 0;
   Closure* next_fun = nullptr;
 
   template <typename T>
@@ -158,8 +161,14 @@ class Interpreter {
           break;
         }
 
+        case BC::check_arity: {
+          unsigned expected = immediate<unsigned>();
+          assert(arity == expected);
+          break;
+        }
+
         case BC::call: {
-          /* int arity = */ immediate<unsigned>();
+          arity = immediate<unsigned>();
           storeContext();
           resume(next_fun);
           next_fun = nullptr;
