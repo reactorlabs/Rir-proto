@@ -2,6 +2,7 @@
 #define BC_H
 
 #include <cstdint>
+#include <cassert>
 
 typedef uint8_t B;
 
@@ -91,6 +92,49 @@ enum class BC : B {
   // immediate: 0
   // stack: -2, +1
   add,
+
+
+  num_of,
+};
+
+enum class ImmediateType {
+  None,
+  Symbol,
+  Code,
+  Value,
+  Int,
+};
+
+namespace {
+  static ImmediateType* getImmediateTypeList() {
+    ImmediateType* itl = new ImmediateType[(B)BC::num_of];
+    itl[(int)BC::mkenv]         = ImmediateType::None;
+    itl[(int)BC::loadenv]       = ImmediateType::None;
+    itl[(int)BC::push]          = ImmediateType::Value;
+    itl[(int)BC::store]         = ImmediateType::Symbol;
+    itl[(int)BC::load]          = ImmediateType::Symbol;
+    itl[(int)BC::force]         = ImmediateType::None;
+    itl[(int)BC::mkclosure]     = ImmediateType::Code;
+    itl[(int)BC::mkprom]        = ImmediateType::Code;
+    itl[(int)BC::set_fun]       = ImmediateType::None;
+    itl[(int)BC::call_generic]  = ImmediateType::Int;
+    itl[(int)BC::call_fast_env] = ImmediateType::Code;
+    itl[(int)BC::call_fast]     = ImmediateType::Code;
+    itl[(int)BC::check_arity]   = ImmediateType::Int;
+    itl[(int)BC::ret]           = ImmediateType::None;
+    itl[(int)BC::ret_prom]      = ImmediateType::None;
+    itl[(int)BC::add]           = ImmediateType::None;
+
+
+    return itl;
+  }
+
+  static ImmediateType* BC_immediate = getImmediateTypeList();
+};
+
+class BCVerifier {
+ public:
+  void verify(BC* bc, unsigned size);
 };
 
 #endif

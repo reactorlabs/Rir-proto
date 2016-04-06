@@ -45,6 +45,8 @@ class Builder {
   Code* operator () () {
     auto res = new Code(reinterpret_cast<BC*>(&(*code)[0]));
     code = nullptr;
+    BCVerifier v;
+    v.verify(res->bc, pos);
     return res;
   }
 };
