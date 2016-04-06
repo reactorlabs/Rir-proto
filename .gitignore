@@ -1,4 +1,4 @@
 .depend
 ir
-main.o
+*.o
 *.swp

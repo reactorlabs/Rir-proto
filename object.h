@@ -125,8 +125,4 @@ class Promise : public Closure {
   }
 };
 
-Value* C(int i) {
-  return new Int(i);
-}
-
 #endif
