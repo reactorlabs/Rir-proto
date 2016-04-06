@@ -65,21 +65,6 @@ class Int : public Value {
   }
 };
 
-class Pool {
-  std::vector<Value*> cp;
- public:
-  unsigned intern(Value* val) {
-    for (unsigned p = 0; p < cp.size(); ++p)
-      if (cp[p] == val)
-        return p;
-    cp.push_back(val);
-    return cp.size()-1;
-  }
-  Value* get(unsigned pos) {
-    return cp[pos];
-  }
-};
-
 class Symbols {
   std::vector<const char *> sym2name;
   std::map<const char *, Symbol> name2sym;
@@ -108,8 +93,7 @@ class Symbols {
 class Code : public Value {
  public:
   BC* bc;
-  Pool* cp;
-  Code(BC* bc, Pool* cp) : bc(bc), cp(cp) {}
+  Code(BC* bc) : bc(bc) {}
 
   void print(std::ostream& o) override {
     o << "someCode";
@@ -126,5 +110,9 @@ class Promise : public Continuation {
   Value* value = nullptr;
   Promise(Code* code, Env* rho) : Continuation(code, code->bc, rho) {}
 };
+
+Value* C(int i) {
+  return new Int(i);
+}
 
 #endif

@@ -11,13 +11,8 @@ enum class BC : B {
   // stack: 0
   mkenv,
 
-  // Push an immediate int
-  // immediate: sizeof(int) bytes
-  // stack: +1
-  push_int,
-
-  // Read an index and load it from the constant pool
-  // immediate: sizeof(unsigned) bytes
+  // Push a constant
+  // immediate: sizeof(Value*) bytes
   // stack: +1
   push,
 

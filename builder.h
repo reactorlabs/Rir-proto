@@ -7,7 +7,6 @@
 
 class Builder {
   std::vector<char>* code;
-  Pool* pool;
 
   unsigned pos = 0;
   unsigned size = 1024;
@@ -15,7 +14,6 @@ class Builder {
  public:
   Builder() {
     code = new std::vector<char>(1024);
-    pool = new Pool();
   }
 
   template<typename T>
@@ -35,20 +33,18 @@ class Builder {
   }
 
   Builder& operator << (Value* v) {
-    unsigned idx = pool->intern(v);
-    push(idx);
+    push(v);
     return *this;
   }
 
-  Builder& operator << (int i) {
+  Builder& operator << (unsigned i) {
     push(i);
     return *this;
   }
 
   Code* operator () () {
-    auto res = new Code(reinterpret_cast<BC*>(&(*code)[0]), pool);
+    auto res = new Code(reinterpret_cast<BC*>(&(*code)[0]));
     code = nullptr;
-    pool = nullptr;
     return res;
   }
 };

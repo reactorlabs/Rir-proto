@@ -16,9 +16,9 @@ void eval(Code* c) {
 void t1() {
   Builder code;
 
-  code << BC::push_int << 1
+  code << BC::push     << C(1)
        << BC::store    << a
-       << BC::push     << new Int(1)
+       << BC::push     << C(1)
        << BC::load     << a
        << BC::add
        << BC::ret;
@@ -54,7 +54,7 @@ void t2() {
 
   // outer function
   f0 << BC::mkenv
-     << BC::push_int  << 666
+     << BC::push      << C(666)
      << BC::store     << b
      << BC::mkclosure << f1()
      << BC::store     << f
@@ -77,8 +77,8 @@ void t3() {
      << BC::ret;
 
   f0 << BC::mkenv
-     << BC::push_int << 1
-     << BC::push_int << 1
+     << BC::push           << C(1)
+     << BC::push           << C(1)
      << BC::call_fast_leaf << f1()
      << BC::ret;
 

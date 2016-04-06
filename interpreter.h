@@ -60,15 +60,6 @@ class Interpreter {
     return val;
   }
 
-  template <typename T>
-  T constant() {
-    unsigned idx = *reinterpret_cast<unsigned*>(pc);
-    pc = reinterpret_cast<BC*>(
-        reinterpret_cast<uintptr_t>(pc) + sizeof(unsigned));
-    Value* c = code->cp->get(idx);
-    return static_cast<T>(c);
-  }
-
   void resume(Continuation* cont) {
     rho  = cont->rho;
     code = cont->code;
@@ -102,16 +93,8 @@ class Interpreter {
           break;
 
         case BC::push: {
-          unsigned idx = immediate<unsigned>();
-          Value*   val = code->cp->get(idx);
+          Value*   val = immediate<Value*>();
           $.push(val);
-          break;
-        }
-
-        case BC::push_int: {
-          int v = immediate<int>();
-          Int* n = new Int(v);
-          $.push(n);
           break;
         }
 
@@ -144,14 +127,14 @@ class Interpreter {
         }
 
         case BC::mkclosure: {
-          Code* code = constant<Code*>();
+          Code* code = immediate<Code*>();
           Closure* cls = new Closure(code, rho);
           $.push(cls);
           break;
         }
 
         case BC::mkprom: {
-          Code* code = constant<Code*>();
+          Code* code = immediate<Code*>();
           Promise* prm = new Promise(code, rho);
           $.push(prm);
           break;
@@ -178,7 +161,7 @@ class Interpreter {
         }
 
         case BC::call_fast: {
-          Code* fun = constant<Code*>();
+          Code* fun = immediate<Code*>();
           storeContext();
           code = fun;
           pc   = code->bc;
@@ -186,7 +169,7 @@ class Interpreter {
         }
 
         case BC::call_fast_leaf: {
-          Code* fun = constant<Code*>();
+          Code* fun = immediate<Code*>();
           storeContext();
           code = fun;
           pc   = code->bc;
