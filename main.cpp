@@ -7,6 +7,12 @@ const static Symbol a = Symbols::intern("a");
 const static Symbol b = Symbols::intern("b");
 const static Symbol f = Symbols::intern("f");
 
+void eval(Code* c) {
+  Interpreter i;
+  Value* res = i(c);
+  std::cout << *res << "\n";
+}
+
 void t1() {
   Builder code;
   code << BC::push_int << 1
@@ -16,10 +22,7 @@ void t1() {
        << BC::add
        << BC::ret;
 
-  Interpreter run;
-  Value* res = run(code());
-
-  std::cout << *res << "\n";
+  eval(code());
 }
 
 void t2() {
@@ -63,14 +66,27 @@ void t2() {
      << BC::call      << 1                                      // call
      << BC::ret;
 
-  Code* f = f0();
-  Interpreter i;
-  Value* res = i(f);
-  std::cout << *res << "\n";
+  eval(f0());
+}
+
+void t3() {
+  Builder f0, f1;
+
+  f1 << BC::add
+     << BC::ret;
+
+  f0 << BC::mkenv
+     << BC::push_int << 1
+     << BC::push_int << 1
+     << BC::call_fast_leaf << f1()
+     << BC::ret;
+
+  eval(f0());
 }
 
 int main() {
   t1();
   t2();
+  t3();
   return 0;
 }

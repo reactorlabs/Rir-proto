@@ -177,6 +177,23 @@ class Interpreter {
           break;
         }
 
+        case BC::call_fast: {
+          Code* fun = constant<Code*>();
+          storeContext();
+          code = fun;
+          pc   = code->bc;
+          break;
+        }
+
+        case BC::call_fast_leaf: {
+          Code* fun = constant<Code*>();
+          storeContext();
+          code = fun;
+          pc   = code->bc;
+          rho  = nullptr;
+          break;
+        }
+
         case BC::ret: {
           if (ctx.empty()) goto done;
           resumeContext();

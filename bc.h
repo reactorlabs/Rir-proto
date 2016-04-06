@@ -60,6 +60,16 @@ enum class BC : B {
   // stack: 0
   call,
 
+  // Directly invoke a code object
+  // immediate: sizeof(Code*)
+  // stack: 0
+  call_fast,
+
+  // Directly invoke a code object which does not have an environment
+  // immediate: sizeof(Code*)
+  // stack: 0
+  call_fast_leaf,
+
   // Verify that the arity register contains the expected number of args
   // immediate: sizeof(unsigned)
   // stack: 0
