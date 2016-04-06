@@ -26,6 +26,10 @@ class Interpreter {
       s.push(v);
     }
 
+    size_t size() {
+      return s.size();
+    }
+
     Value* pop() {
       if (s.empty()) {
         std::cout << "Stack underflow\n";

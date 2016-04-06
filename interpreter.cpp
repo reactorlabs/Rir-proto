@@ -42,6 +42,7 @@ Value* Interpreter::operator () (Closure* cls) {
       }
 
       case BC::store: {
+        assert(rho);
         Symbol sym = immediate<Symbol>();
         Value* val = $.pop();
         rho->set(sym, val);
@@ -49,6 +50,7 @@ Value* Interpreter::operator () (Closure* cls) {
       }
 
       case BC::load: {
+        assert(rho);
         Symbol sym = immediate<Symbol>();
         Value* val = rho->get(sym);
         $.push(val);
@@ -56,6 +58,7 @@ Value* Interpreter::operator () (Closure* cls) {
       }
 
       case BC::mkclosure: {
+        assert(rho);
         Code* code = immediate<Code*>();
         Closure* cls = new Closure(code, rho);
         $.push(cls);
@@ -63,6 +66,7 @@ Value* Interpreter::operator () (Closure* cls) {
       }
 
       case BC::mkprom: {
+        assert(rho);
         Code* code = immediate<Code*>();
         Promise* prm = new Promise(code, rho);
         $.push(prm);
