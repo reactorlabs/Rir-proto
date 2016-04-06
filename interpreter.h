@@ -9,6 +9,15 @@
 #include <stack>
 
 class Interpreter {
+  class Continuation {
+   public:
+    Code* code;
+    BC* pos;
+    Env* rho;
+    Continuation(Code* code, BC* pos, Env* rho) :
+        code(code), pos(pos), rho(rho) {}
+  };
+
   class Stack {
     typedef std::stack<Value*> S;
     S s;
@@ -67,20 +76,14 @@ class Interpreter {
     rho = nullptr;
   }
 
-  void invoke(Continuation* cont) {
-    invoke(cont->code, cont->cont);
+  void invoke(Closure* c) {
+    invoke(c->code);
   }
 
-  void invoke(Code* c, BC* pos) {
+  void invoke(Code* c) {
     code = c;
-    pc   = pos;
+    pc   = c->bc;
     clearRegisters();
-  }
-
-  void resume(Continuation* cont) {
-    rho  = cont->rho;
-    code = cont->code;
-    pc   = cont->cont;
   }
 
   void storeContext() {
@@ -89,8 +92,11 @@ class Interpreter {
   }
 
   void resumeContext() {
-    resume(ctx.top());
+    Continuation* cont = ctx.top();
     ctx.pop();
+    rho  = cont->rho;
+    code = cont->code;
+    pc   = cont->pos;
   }
 
  public:
@@ -193,14 +199,14 @@ class Interpreter {
           Code* fun = immediate<Code*>();
           storeContext();
           $.push(rho);
-          invoke(fun, fun->bc);
+          invoke(fun);
           break;
         }
 
         case BC::call_fast: {
           Code* fun = immediate<Code*>();
           storeContext();
-          invoke(fun, fun->bc);
+          invoke(fun);
           break;
         }
 

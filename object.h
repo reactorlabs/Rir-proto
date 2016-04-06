@@ -100,15 +100,29 @@ class Code : public Value {
   }
 };
 
-class Closure : public Continuation {
+class Closure : public Value {
  public:
-  Closure(Code* code, Env* rho) : Continuation(code, code->bc, rho) {}
+  Code* code;
+  Env* rho;
+
+  Closure(Code* code, Env* rho) : code(code), rho(rho) {}
+
+  void print(std::ostream& o) override {
+    o << "aClosure";
+  }
 };
 
-class Promise : public Continuation {
+class Promise : public Closure {
  public:
   Value* value = nullptr;
-  Promise(Code* code, Env* rho) : Continuation(code, code->bc, rho) {}
+  Promise(Code* code, Env* rho) : Closure(code, rho) {}
+
+  void print(std::ostream& o) override {
+    o << "aPromise(";
+    if (value) o << value;
+    else o << "-";
+    o << ")";
+  }
 };
 
 Value* C(int i) {
