@@ -16,7 +16,8 @@ void eval(Code* c) {
 void t1() {
   Builder code;
 
-  code << BC::push     << C(1)
+  code << BC::mkenv
+       << BC::push     << C(1)
        << BC::store    << a
        << BC::push     << C(1)
        << BC::load     << a
@@ -49,20 +50,21 @@ void t2() {
      << BC::ret;
 
   // the "b" promise
-  p0 << BC::load << b << BC::force
+  p0 << BC::loadenv
+     << BC::load << b << BC::force
      << BC::ret_prom;
 
   // outer function
   f0 << BC::mkenv
-     << BC::push      << C(666)
-     << BC::store     << b
-     << BC::mkclosure << f1()
-     << BC::store     << f
+     << BC::push          << C(666)
+     << BC::store         << b
+     << BC::mkclosure     << f1()
+     << BC::store         << f
      // the call sequence
-     << BC::load      << f     << BC::force
+     << BC::load          << f     << BC::force
      << BC::set_fun
-     << BC::mkprom    << p0()                                   // push arg
-     << BC::call      << 1                                      // call
+     << BC::mkprom        << p0()                                   // push arg
+     << BC::call_generic  << 1                                      // call
      << BC::ret;
 
   eval(f0());
@@ -72,14 +74,13 @@ void t3() {
   Builder f0, f1;
 
   // Demo faster calling conventions: inner function has no env
-
   f1 << BC::add
      << BC::ret;
 
   f0 << BC::mkenv
-     << BC::push           << C(1)
-     << BC::push           << C(1)
-     << BC::call_fast_leaf << f1()
+     << BC::push         << C(1)
+     << BC::push         << C(1)
+     << BC::call_fast    << f1()
      << BC::ret;
 
   eval(f0());

@@ -6,10 +6,15 @@
 typedef uint8_t B;
 
 enum class BC : B {
-  // Create a new environment with the current rho as parrent
+  // Create a new environment with the tos as enclosing environment
   // immediate: 0
-  // stack: 0
+  // stack: -1
   mkenv,
+
+  // Load tos as new environment
+  // immediate: 0
+  // stack: -1
+  loadenv,
 
   // Push a constant
   // immediate: sizeof(Value*) bytes
@@ -49,25 +54,25 @@ enum class BC : B {
   // stack: -1
   set_fun,
 
-  // Set arity register and call the function in the function register
-  //   (args are passed via stack)
-  // immediate: sizeof(unsigned) as the arity
-  // stack: 0
-  call,
+  // Push arity and rho to the stack and call the function in the function
+  //   register (args are passed via stack)
+  // immediate: sizeof(Int*) as the arity
+  // stack: 2
+  call_generic,
 
-  // Directly invoke a code object
+  // Directly invoke a code object, push rho to stack
+  // immediate: sizeof(Code*)
+  // stack: 1
+  call_fast_env,
+
+  // Directly invoke a code object which does not have access to parent env
   // immediate: sizeof(Code*)
   // stack: 0
   call_fast,
 
-  // Directly invoke a code object which does not have an environment
-  // immediate: sizeof(Code*)
-  // stack: 0
-  call_fast_leaf,
-
   // Verify that the arity register contains the expected number of args
   // immediate: sizeof(unsigned)
-  // stack: 0
+  // stack: -1
   check_arity,
 
   // Return from function (return value is passed on stack)

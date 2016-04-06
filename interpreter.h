@@ -42,15 +42,17 @@ class Interpreter {
 
   typedef std::stack<Continuation*> Ctx;
 
-  Env* rho;
+  // Global interpreter and context stack
   Stack $;
-  Code* code;
-  BC* pc;
   Ctx ctx;
 
-  // Registers
-  unsigned arity = 0;
+  // Interpreter state
+  Code* code;
+  BC* pc;
+
+  // Registers local to the function
   Closure* next_fun = nullptr;
+  Env* rho = nullptr;
 
   template <typename T>
   T immediate() {
@@ -58,6 +60,21 @@ class Interpreter {
     pc = reinterpret_cast<BC*>(
         reinterpret_cast<uintptr_t>(pc) + sizeof(T));
     return val;
+  }
+
+  void clearRegisters() {
+    next_fun = nullptr;
+    rho = nullptr;
+  }
+
+  void invoke(Continuation* cont) {
+    invoke(cont->code, cont->cont);
+  }
+
+  void invoke(Code* c, BC* pos) {
+    code = c;
+    pc   = pos;
+    clearRegisters();
   }
 
   void resume(Continuation* cont) {
@@ -84,16 +101,25 @@ class Interpreter {
   }
 
   Value* operator () (Closure* cls) {
-    resume(cls);
+    $.push(cls->rho);
+    invoke(cls);
+    assert(*pc == BC::mkenv);
 
     while (true) {
       switch(*pc++) {
-        case BC::mkenv:
-          rho = new Env(rho);
+        case BC::loadenv: {
+          rho = $.pop<Env*>();
           break;
+        }
+
+        case BC::mkenv: {
+          Env* enclos = $.pop<Env*>();
+          rho = new Env(enclos);
+          break;
+        }
 
         case BC::push: {
-          Value*   val = immediate<Value*>();
+          Value* val = immediate<Value*>();
           $.push(val);
           break;
         }
@@ -108,7 +134,8 @@ class Interpreter {
             break;
           }
           storeContext();
-          resume(p);
+          $.push(rho);
+          invoke(p);
           break;
         }
 
@@ -148,32 +175,32 @@ class Interpreter {
 
         case BC::check_arity: {
           unsigned expected = immediate<unsigned>();
-          assert(arity == expected);
+          Int* arity = $.pop<Int*>();
+          assert(arity->val == expected);
           break;
         }
 
-        case BC::call: {
-          arity = immediate<unsigned>();
+        case BC::call_generic: {
+          unsigned arity = immediate<unsigned>();
           storeContext();
-          resume(next_fun);
-          next_fun = nullptr;
+          $.push(new Int(arity));
+          $.push(rho);
+          invoke(next_fun);
+          break;
+        }
+
+        case BC::call_fast_env: {
+          Code* fun = immediate<Code*>();
+          storeContext();
+          $.push(rho);
+          invoke(fun, fun->bc);
           break;
         }
 
         case BC::call_fast: {
           Code* fun = immediate<Code*>();
           storeContext();
-          code = fun;
-          pc   = code->bc;
-          break;
-        }
-
-        case BC::call_fast_leaf: {
-          Code* fun = immediate<Code*>();
-          storeContext();
-          code = fun;
-          pc   = code->bc;
-          rho  = nullptr;
+          invoke(fun, fun->bc);
           break;
         }
 
