@@ -6,8 +6,35 @@
 #include <iostream>
 #include <map>
 #include <vector>
+#include <cassert>
 
 typedef unsigned Symbol;
+
+class Symbols {
+  std::vector<const char *> sym2name;
+  std::map<const char *, Symbol> name2sym;
+
+  static Symbols& singleton() {
+    static Symbols s;
+    return s;
+  }
+
+  Symbol intern_(const char * name) {
+    if (name2sym.count(name))
+      return name2sym.at(name);
+    sym2name.push_back(name);
+    name2sym.emplace(name, sym2name.size());
+    return sym2name.size();
+  }
+
+  const char* name_(Symbol s) {
+    return sym2name[s-1];
+  }
+ public:
+  static Symbol intern(const char * name) { return singleton().intern_(name); }
+  static const char* name(Symbol s) { return singleton().name_(s); }
+};
+
 
 class Value {
   friend std::ostream& operator << (std::ostream& o, Value& v) {
@@ -29,7 +56,13 @@ class Env : public Value {
   }
 
   Value* get(Symbol s) {
-    return env.count(s) ? env.at(s) : enclos->get(s);
+    if (env.count(s))
+      return env.at(s);
+    if (enclos == nullptr) {
+      std::cout << "symbol " << Symbols::name(s) << " not found\n";
+      assert(false);
+    }
+    return enclos->get(s);
   }
 
   void print(std::ostream& o) override {
@@ -63,31 +96,6 @@ class Int : public Value {
   void print(std::ostream& o) override {
     o << val;
   }
-};
-
-class Symbols {
-  std::vector<const char *> sym2name;
-  std::map<const char *, Symbol> name2sym;
-
-  static Symbols& singleton() {
-    static Symbols s;
-    return s;
-  }
-
-  Symbol intern_(const char * name) {
-    if (name2sym.count(name))
-      return name2sym.at(name);
-    sym2name.push_back(name);
-    name2sym.emplace(name, sym2name.size());
-    return sym2name.size();
-  }
-
-  const char* name_(Symbol s) {
-    return sym2name[s-1];
-  }
- public:
-  static Symbol intern(const char * name) { return singleton().intern_(name); }
-  static const char* name(Symbol s) { return singleton().name_(s); }
 };
 
 class Code : public Value {

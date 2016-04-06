@@ -90,7 +90,7 @@ Value* Interpreter::operator () (Closure* cls) {
         unsigned arity = immediate<unsigned>();
         storeContext();
         $.push(new Int(arity));
-        $.push(rho);
+        $.push(next_fun->rho);
         invoke(next_fun);
         break;
       }

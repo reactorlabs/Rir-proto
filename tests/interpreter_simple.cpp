@@ -1,24 +1,4 @@
-#include <gtest/gtest.h>
-
-#include "../interpreter.h"
-#include "../builder.h"
-
-#include <iostream>
-
-const static Symbol a = Symbols::intern("a");
-const static Symbol b = Symbols::intern("b");
-const static Symbol f = Symbols::intern("f");
-
-Value* eval(Code* c) {
-  Interpreter i;
-  return i(c);
-}
-
-void checkInt(Value* v, int i) {
-  Int* iv = dynamic_cast<Int*>(v);
-  EXPECT_NE(iv, nullptr);
-  EXPECT_EQ(iv->val, i);
-}
+#include "test.h"
 
 TEST(Interpreter, simple) {
   Builder code;
@@ -31,8 +11,7 @@ TEST(Interpreter, simple) {
        << BC::add
        << BC::ret;
 
-  Value* res = eval(code());
-  checkInt(res, 2);
+  checkInt(code(), 2);
 }
 
 TEST(Interpreter, two_fun_prom) {
@@ -75,9 +54,7 @@ TEST(Interpreter, two_fun_prom) {
      << BC::call_generic  << 1                                      // call
      << BC::ret;
 
-  Value* res = eval(f0());
-
-  checkInt(res, 1332);
+  checkInt(f0(), 1332);
 }
 
 TEST(Interpreter, fastcall) {
@@ -94,8 +71,7 @@ TEST(Interpreter, fastcall) {
      << BC::call_fast_env  << f1()
      << BC::ret;
 
-  Value* res = eval(f0());
-  checkInt(res, 2);
+  checkInt(f0(), 2);
 }
 
 
@@ -112,6 +88,5 @@ TEST(Interpreter, fastcall_noenv) {
      << BC::call_fast    << f1()
      << BC::ret;
 
-  Value* res = eval(f0());
-  checkInt(res, 2);
+  checkInt(f0(), 2);
 }

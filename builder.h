@@ -49,7 +49,7 @@ class Builder {
   }
 };
 
-static Value* C(int i) {
+extern inline Value* C(int i) {
   return new Int(i);
 }
 

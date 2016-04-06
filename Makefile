@@ -33,5 +33,6 @@ check: tests
 
 clean:
 	-rm -f *.o
+	-rm -f tests/*.o
 	-rm -f $(TARGET)
 	-rm -f tests/tests
