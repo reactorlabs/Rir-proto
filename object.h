@@ -1,32 +1,11 @@
-#ifndef IR_H
-#define IR_H
+#ifndef OBJECT_H
+#define OBJECT_H
 
+#include "bc.h"
+
+#include <iostream>
 #include <map>
 #include <vector>
-#include <stack>
-#include <memory>
-#include <iostream>
-
-typedef uint8_t B;
-
-enum class BC : B {
-  mkenv,
-  push_int,
-  push,
-  store,
-  load,
-  force,
-  mkclosure,
-  mkprom,
-  set_fun,
-  call,
-  check_arity,
-  ret,
-  ret_prom,
-  add,
-};
-
-class Code;
 
 typedef unsigned Symbol;
 
@@ -57,6 +36,8 @@ class Env : public Value {
     o << "anEnv";
   }
 };
+
+class Code;
 
 class Continuation : public Value {
  public:

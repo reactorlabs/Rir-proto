@@ -1,10 +1,12 @@
 #ifndef INTERPRETER_H
 #define INTERPRETER_H
 
-#include "ir.h"
+#include "bc.h"
+#include "object.h"
 
 #include <cassert>
 #include <iostream>
+#include <stack>
 
 class Interpreter {
   class Stack {

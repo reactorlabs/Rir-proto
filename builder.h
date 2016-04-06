@@ -1,7 +1,7 @@
 #ifndef BUILDER_H
 #define BUILDER_H
 
-#include "ir.h"
+#include "bc.h"
 
 #include <vector>
 
