@@ -15,6 +15,7 @@ void eval(Code* c) {
 
 void t1() {
   Builder code;
+
   code << BC::push_int << 1
        << BC::store    << a
        << BC::push     << new Int(1)
@@ -26,9 +27,7 @@ void t1() {
 }
 
 void t2() {
-  Builder f0;
-  Builder f1;
-  Builder p0;
+  Builder f0, f1, p0;
 
   // Function is:
   //
@@ -71,6 +70,8 @@ void t2() {
 
 void t3() {
   Builder f0, f1;
+
+  // Demo faster calling conventions: inner function has no env
 
   f1 << BC::add
      << BC::ret;
