@@ -2,3 +2,4 @@
 ir
 *.o
 *.swp
+tests/tests

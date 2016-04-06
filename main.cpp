@@ -13,21 +13,7 @@ void eval(Code* c) {
   std::cout << *res << "\n";
 }
 
-void t1() {
-  Builder code;
-
-  code << BC::mkenv
-       << BC::push     << C(1)
-       << BC::store    << a
-       << BC::push     << C(1)
-       << BC::load     << a
-       << BC::add
-       << BC::ret;
-
-  eval(code());
-}
-
-void t2() {
+void t() {
   Builder f0, f1, p0;
 
   // Function is:
@@ -70,25 +56,8 @@ void t2() {
   eval(f0());
 }
 
-void t3() {
-  Builder f0, f1;
-
-  // Demo faster calling conventions: inner function has no env
-  f1 << BC::add
-     << BC::ret;
-
-  f0 << BC::mkenv
-     << BC::push         << C(1)
-     << BC::push         << C(1)
-     << BC::call_fast    << f1()
-     << BC::ret;
-
-  eval(f0());
-}
-
+// See tests for more examples
 int main() {
-  t1();
-  t2();
-  t3();
+  t();
   return 0;
 }

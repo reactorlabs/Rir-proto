@@ -9,8 +9,13 @@ SUFFX = cpp
 default: $(TARGET)
 all: default
 
-OBJECTS = $(patsubst %.$(SUFFX), %.o, $(wildcard *.$(SUFFX)))
+SRCS    = $(wildcard *.$(SUFFX))
+OBJECTS = $(patsubst %.$(SUFFX), %.o, $(SRCS))
 HEADERS = $(wildcard *.h)
+TEST_SRCS  = $(filter-out main.cpp,$(SRCS))
+TEST_SRCS += $(wildcard tests/*.$(SUFFX))
+TEST_OBJS  = $(patsubst %.$(SUFFX), %.o, $(TEST_SRCS))
+
 
 %.o: %.$(SUFFX) $(HEADERS)
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -20,6 +25,13 @@ HEADERS = $(wildcard *.h)
 $(TARGET): $(OBJECTS)
 	$(CC) $(OBJECTS) -Wall $(LIBS) -o $@
 
+tests: $(TEST_OBJS)
+	$(CC) $(TEST_OBJS) -Wall $(LIBS) -lgtest -o tests/tests
+
+check: tests
+	tests/tests
+
 clean:
 	-rm -f *.o
 	-rm -f $(TARGET)
+	-rm -f tests/tests
