@@ -10,7 +10,7 @@ TEST(Inline, baseline_1) {
      << BC::ret;
 
   f0 << BC::enter_fun      << (int)0
-     << BC::mkclosure      << f1()
+     << BC::mkclosure      << f1()     << L({a, a})
      << BC::push           << C(1)
      << BC::push           << C(1)
      << BC::call_generic   << 2
@@ -33,7 +33,7 @@ TEST(Inline, inline_1) {
      << BC::ret;
 
   f0 << BC::enter_fun      << (int)0
-     << BC::mkclosure      << f1()
+     << BC::mkclosure      << f1()     << L({a, a})
      << BC::push           << C(1)
      << BC::push           << C(1)
 
@@ -112,7 +112,7 @@ TEST(Inline, baseline_prom_1) {
      << BC::ret;
 
   f0 << BC::enter_fun      << (int)0
-     << BC::mkclosure      << f1()
+     << BC::mkclosure      << f1()    << L({b})
      << BC::mkprom         << p0()
      << BC::push           << C(42)
      << BC::store          << a
@@ -141,7 +141,7 @@ TEST(Inline, inline_prom_1) {
      << BC::ret;
 
   f0 << BC::enter_fun      << (int)0
-     << BC::mkclosure      << f1()
+     << BC::mkclosure      << f1()    << L({b})
      << BC::mkprom         << p0()
      << BC::push           << C(42)
      << BC::store          << a

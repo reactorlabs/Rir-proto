@@ -32,13 +32,18 @@ class Builder {
     return *this;
   }
 
-  Builder& operator << (Value* v) {
+  Builder& operator << (const Value* v) {
     push(v);
     return *this;
   }
 
   Builder& operator << (unsigned i) {
     push(i);
+    return *this;
+  }
+
+  Builder& operator << (Vector* names) {
+    push(names);
     return *this;
   }
 
@@ -53,6 +58,10 @@ class Builder {
 
 extern inline Value* C(int i) {
   return new Int(i);
+}
+
+extern inline Vector* L(std::initializer_list<Value*> ns) {
+  return new Vector(ns);
 }
 
 #endif

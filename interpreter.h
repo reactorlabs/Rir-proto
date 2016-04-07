@@ -124,7 +124,8 @@ class Interpreter {
   Value* operator () (Code* code) {
     return this->operator()(
         new Closure(code,
-                    new Env(nullptr)));
+                    new Env(nullptr),
+                    new Vector({})));
   }
 
   Value* operator () (Closure* cls);

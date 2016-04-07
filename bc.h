@@ -62,7 +62,7 @@ enum class BC : B {
   force,
 
   // Wrap a code object in a closure with current rho
-  // immediate: sizeof(Code*)
+  // immediate: Code*, formals*
   // stack: +1
   mkclosure,
 
@@ -71,14 +71,14 @@ enum class BC : B {
   // stack: +1
   mkprom,
 
-  // (1) push arity to the stack and (2) invoke the closure at arity offset on
-  //   the stack (args are supposed to be already on the in between stack)
-  // immediate: sizeof(Int*) as the arity
-  // stack: +1
+  // invoke the closure at nargs offset on the stack
+  //   (args are supposed to be already on the in between stack)
+  // immediate: nargs: unsigned
+  // stack: 0
   call_generic,
 
   // Directly invoke a code object
-  // immediate: sizeof(Code*)
+  // immediate: Code*
   // stack: 0
   call_fast,
 
@@ -99,6 +99,18 @@ enum class BC : B {
   // stack: -2, +1
   add,
 
+  // invoke the closure at nargs offset on the stack and fill up missing
+  // arguments by Symbols::missing_arg
+  // immediate: nargs: unsigned
+  // stack: ?
+  call_arg_adapt,
+
+  // invoke the closure at nargs offset on the stack and reshuffle arguments
+  // to match given names
+  // immediate: nargs: unsigned, names: Vector*
+  // stack: ?
+  call_name_arg_adapt,
+
   num_of
 };
 
@@ -106,28 +118,32 @@ enum class ImmediateType {
   None,
   Symbol,
   Code,
+  Vector,
+  CodeVector,
   Value,
-  Int,
+  Unsigned,
 };
 
 static ImmediateType BC_immediate[(B)BC::num_of] = {
   ImmediateType::None,
   ImmediateType::None,
   ImmediateType::None,
-  ImmediateType::Int,
+  ImmediateType::Unsigned,
   ImmediateType::None,
   ImmediateType::None,
   ImmediateType::Value,
   ImmediateType::Symbol,
   ImmediateType::Symbol,
   ImmediateType::None,
+  ImmediateType::CodeVector,
   ImmediateType::Code,
-  ImmediateType::Code,
-  ImmediateType::Int,
+  ImmediateType::Unsigned,
   ImmediateType::Code,
   ImmediateType::None,
   ImmediateType::None,
   ImmediateType::None,
+  ImmediateType::Unsigned,
+  ImmediateType::Vector,
 };
 
 class BCVerifier {

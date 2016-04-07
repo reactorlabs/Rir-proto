@@ -26,7 +26,7 @@ TEST(Interpreter, two_fun) {
 
   // outer function
   f0 << BC::enter_fun     << (int)0
-     << BC::mkclosure     << f1()
+     << BC::mkclosure     << f1()      << L({})
      << BC::call_generic  << (int)0
      << BC::leave_fun
      << BC::ret;
@@ -68,10 +68,10 @@ TEST(Interpreter, two_fun_prom) {
   f0 << BC::enter_fun     << (int)0
      << BC::push          << C(666)
      << BC::store         << b
-     << BC::mkclosure     << f1()
+     << BC::mkclosure     << f1()       << L({a})
      << BC::store         << f
      // the call sequence
-     << BC::load          << f     << BC::force
+     << BC::load          << f          << BC::force
      << BC::mkprom        << p0()                                   // push arg
      << BC::call_generic  << 1                                      // call
      << BC::leave_fun

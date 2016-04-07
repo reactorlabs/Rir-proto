@@ -74,7 +74,7 @@ Value* Interpreter::operator () (Closure* cls) {
 
       case BC::store: {
         assert(rho);
-        Symbol sym = immediate<Symbol>();
+        Symbol* sym = immediate<Symbol*>();
         Value* val = $.pop();
         rho->set(sym, val);
         break;
@@ -82,8 +82,12 @@ Value* Interpreter::operator () (Closure* cls) {
 
       case BC::load: {
         assert(rho);
-        Symbol sym = immediate<Symbol>();
+        Symbol* sym = immediate<Symbol*>();
         Value* val = rho->get(sym);
+        if (val == Symbols::missing_arg) {
+          std::cout << "missing arg " << *sym << "\n";
+          assert(false);
+        }
         $.push(val);
         break;
       }
@@ -91,7 +95,8 @@ Value* Interpreter::operator () (Closure* cls) {
       case BC::mkclosure: {
         assert(rho);
         Code* code = immediate<Code*>();
-        Closure* cls = new Closure(code, rho);
+        Vector* formals = immediate<Vector*>();
+        Closure* cls = new Closure(code, rho, formals);
         $.push(cls);
         break;
       }
@@ -105,8 +110,68 @@ Value* Interpreter::operator () (Closure* cls) {
       }
 
       case BC::call_generic: {
-        unsigned arity = immediate<unsigned>();
-        Closure* fun = $.at<Closure*>(arity);
+        unsigned num_args = immediate<unsigned>();
+        Closure* fun = $.at<Closure*>(num_args);
+        unsigned arity = fun->formals->size();
+        assert(num_args == arity);
+        invoke(fun->code);
+        break;
+      }
+
+      case BC::call_arg_adapt: {
+        unsigned num_args = immediate<unsigned>();
+        Closure* fun = $.at<Closure*>(num_args);
+        unsigned arity = fun->formals->size();
+        if (num_args > arity) {
+          std::cout << "too many args given\n";
+          assert(false);
+        }
+        for (int i = num_args; i < arity; ++i) {
+          $.push(Symbols::missing_arg);
+        }
+        invoke(fun->code);
+        break;
+      }
+
+      case BC::call_name_arg_adapt: {
+        Vector* names = immediate<Vector*>();
+        unsigned num_args = names->size();
+
+        Closure* fun = $.at<Closure*>(num_args);
+        unsigned arity = fun->formals->size();
+
+        if (num_args > arity) {
+          std::cout << "too many args given\n";
+          assert(false);
+        }
+
+        std::deque<Value*> args;
+        for (int i = 0; i < num_args; ++i)
+          args.push_front($.pop());
+
+        int positional = 0;
+        for (auto f : fun->formals->values) {
+          int found;
+          for (found = 0; found < names->size(); ++found) {
+            if (names->values[found] == f) {
+              $.push(args[found]);
+              break;
+            }
+          }
+          if (found == names->size()) {
+            while (true) {
+              if (positional == args.size()) {
+                $.push(Symbols::missing_arg);
+                break;
+              }
+              if (names->values[positional] == Symbols::positional_arg) {
+                $.push(args[positional++]);
+                break;
+              }
+              positional++;
+            }
+          }
+        }
         invoke(fun->code);
         break;
       }

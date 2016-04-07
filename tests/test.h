@@ -8,11 +8,12 @@
 
 #include <iostream>
 
-const static Symbol a = Symbols::intern("a");
-const static Symbol b = Symbols::intern("b");
-const static Symbol c = Symbols::intern("c");
-const static Symbol f = Symbols::intern("f");
-const static Symbol g = Symbols::intern("g");
+static Symbol* a = Symbols::intern("a");
+static Symbol* b = Symbols::intern("b");
+static Symbol* c = Symbols::intern("c");
+static Symbol* f = Symbols::intern("f");
+static Symbol* g = Symbols::intern("g");
+static Symbol* _ = Symbols::positional_arg;
 
 extern void checkInt(Code* c, int i);
 #endif

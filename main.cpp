@@ -3,9 +3,9 @@
 
 #include <iostream>
 
-const static Symbol a = Symbols::intern("a");
-const static Symbol b = Symbols::intern("b");
-const static Symbol f = Symbols::intern("f");
+const static Symbol* a = Symbols::intern("a");
+const static Symbol* b = Symbols::intern("b");
+const static Symbol* f = Symbols::intern("f");
 
 void eval(Code* c) {
   Interpreter i;
@@ -45,7 +45,7 @@ void t() {
   f0 << BC::enter_fun     << (int)0
      << BC::push          << C(666)
      << BC::store         << b
-     << BC::mkclosure     << f1()
+     << BC::mkclosure     << f1() << L({a})
      << BC::store         << f
      // the call sequence
      << BC::load          << f     << BC::force

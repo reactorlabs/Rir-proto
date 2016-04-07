@@ -21,7 +21,7 @@ TEST(Interpreter, capture) {
   f1 << BC::enter_fun << 1
      << BC::store << a
      // body
-     << BC::mkclosure << f2()
+     << BC::mkclosure << f2()       << L({})
      << BC::store << g
      << BC::load << g << BC::force
      << BC::leave_fun
@@ -35,7 +35,7 @@ TEST(Interpreter, capture) {
      << BC::ret;
 
   f0 << BC::enter_fun << (int)0
-     << BC::mkclosure << f1()
+     << BC::mkclosure << f1()       << L({a})
      << BC::store << f
      << BC::push << C(22)
      << BC::store << b
