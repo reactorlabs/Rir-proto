@@ -38,7 +38,7 @@ void t() {
   // the "b" promise
   p0 << BC::loadenv
      << BC::load << b << BC::force
-     << BC::update_prom
+     << BC::leave_prom
      << BC::ret;
 
   // outer function

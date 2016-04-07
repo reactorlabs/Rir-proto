@@ -31,7 +31,7 @@ TEST(Interpreter, capture) {
      << BC::load << b << BC::force
      << BC::load << b << BC::force
      << BC::add
-     << BC::update_prom
+     << BC::leave_prom
      << BC::ret;
 
   f0 << BC::enter_fun << (int)0

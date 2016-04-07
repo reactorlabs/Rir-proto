@@ -14,9 +14,8 @@ class Interpreter {
    public:
     Code* code;
     BC* pos;
-    Env* rho;
-    Continuation(Code* code, BC* pos, Env* rho) :
-        code(code), pos(pos), rho(rho) {}
+    Continuation(Code* code, BC* pos) :
+        code(code), pos(pos) {}
   };
 
   class Stack {
@@ -69,14 +68,16 @@ class Interpreter {
   };
 
   typedef std::stack<Continuation*> Ctx;
+  typedef std::stack<Env*> EnvCtx;
 
   // Global interpreter and context stack
   Stack $;
+  EnvCtx envCtx;
   Ctx ctx;
 
   // Interpreter state
-  Code* code;
-  BC* pc;
+  Code* code = nullptr;
+  BC* pc = nullptr;
 
   // Registers local to the function
   Env* rho = nullptr;
@@ -89,27 +90,34 @@ class Interpreter {
     return val;
   }
 
-  void clearRegisters() {
-    rho = nullptr;
-  }
-
   void invoke(Code* c) {
+    storeContext();
     code = c;
     pc   = c->bc;
-    clearRegisters();
   }
 
   void storeContext() {
-    Continuation* cont = new Continuation(code, pc, rho);
+    Continuation* cont = new Continuation(code, pc);
     ctx.push(cont);
   }
 
-  void resumeContext() {
+  void storeEnv() {
+    envCtx.push(rho);
+  }
+
+  void restoreContext() {
+    assert(!ctx.empty());
     Continuation* cont = ctx.top();
     ctx.pop();
-    rho  = cont->rho;
     code = cont->code;
     pc   = cont->pos;
+    delete cont;
+  }
+
+  void restoreEnv() {
+    assert(!envCtx.empty());
+    rho = envCtx.top();
+    envCtx.pop();
   }
 
  public:

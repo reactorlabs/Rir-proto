@@ -3,21 +3,23 @@
 
 
 Value* Interpreter::operator () (Closure* cls) {
-  invoke(cls->code);
+  code = cls->code;
+  pc = cls->code->bc;
 
   $.push(cls);
-  $.push(new Int(0));
   assert(*pc == BC::enter_fun);
 
   while (true) {
     switch(*pc++) {
       case BC::mkenv: {
+        storeEnv();
         Env* enclos = $.pop<Env*>();
         rho = new Env(enclos);
         break;
       }
 
       case BC::loadenv: {
+        storeEnv();
         Promise* p = $.top<Promise*>();
         rho = p->rho;
         break;
@@ -29,12 +31,16 @@ Value* Interpreter::operator () (Closure* cls) {
       }
 
       case BC::enter_fun: {
-        unsigned expected = immediate<unsigned>();
-        Int* arity = $.pop<Int*>();
-        assert(arity->val == expected);
-        Closure* fun = $.at<Closure*>(expected);
+        storeEnv();
+        unsigned arity = immediate<unsigned>();
+        Closure* fun = $.at<Closure*>(arity);
         Env* enclos = fun->rho;
         rho = new Env(enclos);
+        break;
+      }
+
+      case BC::leave: {
+        restoreEnv();
         break;
       }
 
@@ -42,7 +48,7 @@ Value* Interpreter::operator () (Closure* cls) {
         Value* res = $.pop<Value*>();
         $.pop<Closure*>();
         $.push(res);
-        rho = nullptr;
+        restoreEnv();
         break;
       }
 
@@ -62,7 +68,6 @@ Value* Interpreter::operator () (Closure* cls) {
           $.push(p->value);
           break;
         }
-        storeContext();
         invoke(p->code);
         break;
       }
@@ -101,32 +106,29 @@ Value* Interpreter::operator () (Closure* cls) {
 
       case BC::call_generic: {
         unsigned arity = immediate<unsigned>();
-        storeContext();
-        $.push(new Int(arity));
-        Closure* fun = $.at<Closure*>(arity+1);
+        Closure* fun = $.at<Closure*>(arity);
         invoke(fun->code);
         break;
       }
 
       case BC::call_fast: {
         Code* fun = immediate<Code*>();
-        storeContext();
         invoke(fun);
         break;
       }
 
       case BC::ret: {
         if (ctx.empty()) goto done;
-        resumeContext();
+        restoreContext();
         break;
       }
 
-      case BC::update_prom: {
+      case BC::leave_prom: {
         Value* res = $.pop<Value*>();
         Promise* prom = $.pop<Promise*>();
         prom->value = res;
         $.push(res);
-        rho = nullptr;
+        restoreEnv();
         break;
       }
 
@@ -144,5 +146,9 @@ Value* Interpreter::operator () (Closure* cls) {
   }
 
 done:
+  pc = nullptr;
+  code = nullptr;
+  assert(ctx.empty());
+  assert(envCtx.empty());
   return $.pop();
 }

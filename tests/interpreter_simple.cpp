@@ -15,6 +15,26 @@ TEST(Interpreter, simple) {
   checkInt(code(), 2);
 }
 
+TEST(Interpreter, two_fun) {
+  Builder f0, f1;
+
+  // inner fun
+  f1 << BC::enter_fun   << (int)0
+     << BC::push        << C(1)
+     << BC::leave_fun
+     << BC::ret;
+
+  // outer function
+  f0 << BC::enter_fun     << (int)0
+     << BC::mkclosure     << f1()
+     << BC::call_generic  << (int)0
+     << BC::leave_fun
+     << BC::ret;
+
+  checkInt(f0(), 1);
+}
+
+
 TEST(Interpreter, two_fun_prom) {
   Builder f0, f1, p0;
 
@@ -41,7 +61,7 @@ TEST(Interpreter, two_fun_prom) {
   p0 << BC::loadenv
      << BC::load << b
      << BC::force
-     << BC::update_prom
+     << BC::leave_prom
      << BC::ret;
 
   // outer function
@@ -66,6 +86,7 @@ TEST(Interpreter, fastcall) {
   // Demo faster calling conventions
   f1 << BC::mkenv
      << BC::add
+     << BC::leave
      << BC::ret;
 
   f0 << BC::enter_fun      << (int)0

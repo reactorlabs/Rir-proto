@@ -22,17 +22,21 @@ enum class BC : B {
   // stack: +1
   pushenv,
 
-  // (1) Pop number of arguments from the stack, (2) verify it matches arity,
-  //     (3) load closure at arity offset from the stack and (4) create a new
+  // load closure at arity offset from the stack and create a new
   //     env with the closure env as the enclosing env.
   // immediate: sizeof(unsigned) arity
-  // stack: -1
+  // stack: 0
   enter_fun,
 
-  // Pop closure from stack (left there by enter_fun), set env to null
+  // Pop closure from stack (left there by enter_fun), and resoter env
   // immediate: 0
   // stack: -1
   leave_fun,
+
+  // restore env
+  // immediate: 0
+  // stack: 0
+  leave,
 
   // Push a constant
   // immediate: sizeof(Value*) bytes
@@ -51,7 +55,7 @@ enum class BC : B {
 
   // Force tos value: if tos is a promise, then:
   //   * if it has a value replace tos by that value
-  //   * otherwise transfer control to the promise. prom_update will be
+  //   * otherwise transfer control to the promise. leave_prom will be
   //     responsible for placing the correct value on the stack.
   // immediate: 0
   // stack: -1, +1 (if evaluated promise); 0 (otherwise)
@@ -88,7 +92,7 @@ enum class BC : B {
   //   kept on stack as return value.
   // immediate: 0
   // stack: -1
-  update_prom,
+  leave_prom,
 
   // Add two numbers
   // immediate: 0
@@ -111,6 +115,7 @@ static ImmediateType BC_immediate[(B)BC::num_of] = {
   ImmediateType::None,
   ImmediateType::None,
   ImmediateType::Int,
+  ImmediateType::None,
   ImmediateType::None,
   ImmediateType::Value,
   ImmediateType::Symbol,
