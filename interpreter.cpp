@@ -3,20 +3,46 @@
 
 
 Value* Interpreter::operator () (Closure* cls) {
-  $.push(cls->rho);
-  invoke(cls);
-  assert(*pc == BC::mkenv);
+  invoke(cls->code);
+
+  $.push(cls);
+  $.push(new Int(0));
+  assert(*pc == BC::enter_fun);
 
   while (true) {
     switch(*pc++) {
-      case BC::loadenv: {
-        rho = $.pop<Env*>();
-        break;
-      }
-
       case BC::mkenv: {
         Env* enclos = $.pop<Env*>();
         rho = new Env(enclos);
+        break;
+      }
+
+      case BC::loadenv: {
+        Promise* p = $.top<Promise*>();
+        rho = p->rho;
+        break;
+      }
+
+      case BC::pushenv: {
+        $.push(rho);
+        break;
+      }
+
+      case BC::enter_fun: {
+        unsigned expected = immediate<unsigned>();
+        Int* arity = $.pop<Int*>();
+        assert(arity->val == expected);
+        Closure* fun = $.at<Closure*>(expected);
+        Env* enclos = fun->rho;
+        rho = new Env(enclos);
+        break;
+      }
+
+      case BC::leave_fun: {
+        Value* res = $.pop<Value*>();
+        $.pop<Closure*>();
+        $.push(res);
+        rho = nullptr;
         break;
       }
 
@@ -30,14 +56,14 @@ Value* Interpreter::operator () (Closure* cls) {
         Promise* p = dynamic_cast<Promise*>($.top());
         if (!p)
           break;
+        // TODO: should this be here or in load
         if (p->value) {
           $.pop<Promise*>();
           $.push(p->value);
           break;
         }
         storeContext();
-        $.push(rho);
-        invoke(p);
+        invoke(p->code);
         break;
       }
 
@@ -73,33 +99,12 @@ Value* Interpreter::operator () (Closure* cls) {
         break;
       }
 
-      case BC::set_fun: {
-        assert(next_fun == nullptr);
-        next_fun = $.pop<Closure*>();
-        break;
-      }
-
-      case BC::check_arity: {
-        unsigned expected = immediate<unsigned>();
-        Int* arity = $.pop<Int*>();
-        assert(arity->val == expected);
-        break;
-      }
-
       case BC::call_generic: {
         unsigned arity = immediate<unsigned>();
         storeContext();
         $.push(new Int(arity));
-        $.push(next_fun->rho);
-        invoke(next_fun);
-        break;
-      }
-
-      case BC::call_fast_env: {
-        Code* fun = immediate<Code*>();
-        storeContext();
-        $.push(rho);
-        invoke(fun);
+        Closure* fun = $.at<Closure*>(arity+1);
+        invoke(fun->code);
         break;
       }
 
@@ -116,12 +121,12 @@ Value* Interpreter::operator () (Closure* cls) {
         break;
       }
 
-      case BC::ret_prom: {
+      case BC::update_prom: {
         Value* res = $.pop<Value*>();
         Promise* prom = $.pop<Promise*>();
         prom->value = res;
         $.push(res);
-        resumeContext();
+        rho = nullptr;
         break;
       }
 

@@ -7,15 +7,32 @@
 typedef uint8_t B;
 
 enum class BC : B {
-  // Create a new environment with the tos as enclosing environment
+  // Create a new current environment with the tos as enclosing environment
   // immediate: 0
   // stack: -1
   mkenv,
 
-  // Load tos as new environment
+  // Load tos as current environment
   // immediate: 0
   // stack: -1
   loadenv,
+
+  // Push the current env to the stack
+  // immediate: 0
+  // stack: +1
+  pushenv,
+
+  // (1) Pop number of arguments from the stack, (2) verify it matches arity,
+  //     (3) load closure at arity offset from the stack and (4) create a new
+  //     env with the closure env as the enclosing env.
+  // immediate: sizeof(unsigned) arity
+  // stack: -1
+  enter_fun,
+
+  // Pop closure from stack (left there by enter_fun), set env to null
+  // immediate: 0
+  // stack: -1
+  leave_fun,
 
   // Push a constant
   // immediate: sizeof(Value*) bytes
@@ -34,7 +51,7 @@ enum class BC : B {
 
   // Force tos value: if tos is a promise, then:
   //   * if it has a value replace tos by that value
-  //   * otherwise transfer control to the promise. prom_ret will be
+  //   * otherwise transfer control to the promise. prom_update will be
   //     responsible for placing the correct value on the stack.
   // immediate: 0
   // stack: -1, +1 (if evaluated promise); 0 (otherwise)
@@ -50,51 +67,35 @@ enum class BC : B {
   // stack: +1
   mkprom,
 
-  // Set the function register to tos
-  // immediate: 0
-  // stack: -1
-  set_fun,
-
-  // Push arity and rho to the stack and call the function in the function
-  //   register (args are passed via stack)
+  // (1) push arity to the stack and (2) invoke the closure at arity offset on
+  //   the stack (args are supposed to be already on the in between stack)
   // immediate: sizeof(Int*) as the arity
-  // stack: 2
+  // stack: +1
   call_generic,
 
-  // Directly invoke a code object, push rho to stack
-  // immediate: sizeof(Code*)
-  // stack: 1
-  call_fast_env,
-
-  // Directly invoke a code object which does not have access to parent env
+  // Directly invoke a code object
   // immediate: sizeof(Code*)
   // stack: 0
   call_fast,
-
-  // Verify that the arity register contains the expected number of args
-  // immediate: sizeof(unsigned)
-  // stack: -1
-  check_arity,
 
   // Return from function (return value is passed on stack)
   // immediate: 0
   // stack: 0
   ret,
 
-  // Return from promise: stack contains: [ ret_val, promise, ... ]
+  // Leave from promise: stack contains: [ ret_val, promise, ... ]
   //   Promise is removed from stack and updated with ret_val. ret_val is
-  //   pushed on stack as return value.
+  //   kept on stack as return value.
   // immediate: 0
-  // stack: -2, +1
-  ret_prom,
+  // stack: -1
+  update_prom,
 
   // Add two numbers
   // immediate: 0
   // stack: -2, +1
   add,
 
-
-  num_of,
+  num_of
 };
 
 enum class ImmediateType {
@@ -105,31 +106,23 @@ enum class ImmediateType {
   Int,
 };
 
-namespace {
-  static ImmediateType* getImmediateTypeList() {
-    ImmediateType* itl = new ImmediateType[(B)BC::num_of];
-    itl[(int)BC::mkenv]         = ImmediateType::None;
-    itl[(int)BC::loadenv]       = ImmediateType::None;
-    itl[(int)BC::push]          = ImmediateType::Value;
-    itl[(int)BC::store]         = ImmediateType::Symbol;
-    itl[(int)BC::load]          = ImmediateType::Symbol;
-    itl[(int)BC::force]         = ImmediateType::None;
-    itl[(int)BC::mkclosure]     = ImmediateType::Code;
-    itl[(int)BC::mkprom]        = ImmediateType::Code;
-    itl[(int)BC::set_fun]       = ImmediateType::None;
-    itl[(int)BC::call_generic]  = ImmediateType::Int;
-    itl[(int)BC::call_fast_env] = ImmediateType::Code;
-    itl[(int)BC::call_fast]     = ImmediateType::Code;
-    itl[(int)BC::check_arity]   = ImmediateType::Int;
-    itl[(int)BC::ret]           = ImmediateType::None;
-    itl[(int)BC::ret_prom]      = ImmediateType::None;
-    itl[(int)BC::add]           = ImmediateType::None;
-
-
-    return itl;
-  }
-
-  static ImmediateType* BC_immediate = getImmediateTypeList();
+static ImmediateType BC_immediate[(B)BC::num_of] = {
+  ImmediateType::None,
+  ImmediateType::None,
+  ImmediateType::None,
+  ImmediateType::Int,
+  ImmediateType::None,
+  ImmediateType::Value,
+  ImmediateType::Symbol,
+  ImmediateType::Symbol,
+  ImmediateType::None,
+  ImmediateType::Code,
+  ImmediateType::Code,
+  ImmediateType::Int,
+  ImmediateType::Code,
+  ImmediateType::None,
+  ImmediateType::None,
+  ImmediateType::None,
 };
 
 class BCVerifier {

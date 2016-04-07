@@ -72,19 +72,6 @@ class Env : public Value {
 
 class Code;
 
-class Continuation : public Value {
- public:
-  Code* code;
-  BC*   cont;
-  Env*  rho;
-  Continuation(Code* code, BC* cont, Env* rho) :
-      code(code), cont(cont), rho(rho) {}
-
-  void print(std::ostream& o) override {
-    o << "aCont";
-  }
-};
-
 class Int : public Value {
  public:
   Int(int val) : val(val) {}
@@ -120,10 +107,12 @@ class Closure : public Value {
   }
 };
 
-class Promise : public Closure {
+class Promise : public Value {
  public:
+  Code* code;
+  Env* rho;
   Value* value = nullptr;
-  Promise(Code* code, Env* rho) : Closure(code, rho) {}
+  Promise(Code* code, Env* rho) : code(code), rho(rho) {}
 
   void print(std::ostream& o) override {
     o << "aPromise(";

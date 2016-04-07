@@ -2,7 +2,7 @@
 #include "object.h"
 
 void BCVerifier::verify(BC* bc, unsigned size) {
-  for (unsigned i = 0; i < size;) {
+  unsigned i = 0; for(; i < size;) {
     BC pc = bc[i++];
     assert((B)pc < (B)BC::num_of);
     switch(BC_immediate[(B)pc]) {
@@ -28,5 +28,6 @@ void BCVerifier::verify(BC* bc, unsigned size) {
         break;
     }
   }
+  assert(i == size);
 }
 

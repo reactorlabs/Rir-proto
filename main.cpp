@@ -25,32 +25,33 @@ void t() {
   // }
 
   // inner fun
-  f1 << BC::mkenv
+  f1 << BC::enter_fun   << 1
      // load args
-     << BC::check_arity << 1
      << BC::store       << a
      // body
      << BC::load        << a << BC::force
      << BC::load        << a << BC::force
      << BC::add
+     << BC::leave_fun
      << BC::ret;
 
   // the "b" promise
   p0 << BC::loadenv
      << BC::load << b << BC::force
-     << BC::ret_prom;
+     << BC::update_prom
+     << BC::ret;
 
   // outer function
-  f0 << BC::mkenv
+  f0 << BC::enter_fun     << (int)0
      << BC::push          << C(666)
      << BC::store         << b
      << BC::mkclosure     << f1()
      << BC::store         << f
      // the call sequence
      << BC::load          << f     << BC::force
-     << BC::set_fun
      << BC::mkprom        << p0()                                   // push arg
      << BC::call_generic  << 1                                      // call
+     << BC::leave_fun
      << BC::ret;
 
   eval(f0());

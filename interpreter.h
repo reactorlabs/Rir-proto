@@ -4,6 +4,7 @@
 #include "bc.h"
 #include "object.h"
 
+#include <deque>
 #include <cassert>
 #include <iostream>
 #include <stack>
@@ -19,11 +20,11 @@ class Interpreter {
   };
 
   class Stack {
-    typedef std::stack<Value*> S;
+    typedef std::deque<Value*> S;
     S s;
    public:
     void push(Value* v) {
-      s.push(v);
+      s.push_back(v);
     }
 
     size_t size() {
@@ -35,20 +36,34 @@ class Interpreter {
         std::cout << "Stack underflow\n";
         assert(false);
       }
-      Value* t = s.top();
-      s.pop();
+      Value* t = s.back();
+      s.pop_back();
       return t;
     }
 
     Value* top() {
-      return s.top();
+      return s.back();
+    }
+
+    template <typename T>
+    T at(size_t pos) {
+      T t = dynamic_cast<T>(s[s.size() - pos - 1]);
+      assert(t);
+      return t;
+    }
+
+    template <typename T>
+    T top() {
+      T t = dynamic_cast<T>(s.back());
+      assert(t);
+      return t;
     }
 
     template <typename T>
     T pop() {
-      T t = dynamic_cast<T>(s.top());
+      T t = dynamic_cast<T>(s.back());
       assert(t);
-      s.pop();
+      s.pop_back();
       return t;
     }
   };
@@ -64,7 +79,6 @@ class Interpreter {
   BC* pc;
 
   // Registers local to the function
-  Closure* next_fun = nullptr;
   Env* rho = nullptr;
 
   template <typename T>
@@ -76,12 +90,7 @@ class Interpreter {
   }
 
   void clearRegisters() {
-    next_fun = nullptr;
     rho = nullptr;
-  }
-
-  void invoke(Closure* c) {
-    invoke(c->code);
   }
 
   void invoke(Code* c) {
