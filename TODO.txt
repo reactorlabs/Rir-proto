@@ -1,0 +1,14 @@
+TODO
+~~~~
+
+* control flow
+* simple inliner
+* setjmp/longjmp
+   * have a createcontext bc
+   * onexit???
+* bytecode for loadfunction (forces promises, if name matches)
+* call_argument adaptor:
+   * adapt # arguments
+   * BC::call_generic_named << 23 << {_, a, _, b, c}
+   * ellipsis
+* unboxed values, 2 stacks?
