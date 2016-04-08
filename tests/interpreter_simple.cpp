@@ -1,7 +1,7 @@
 #include "test.h"
 
 TEST(Interpreter, simple) {
-  Builder code;
+  BasicBlock code;
 
   code << BC::enter_fun  << (int)0
        << BC::push       << C(1)
@@ -12,11 +12,11 @@ TEST(Interpreter, simple) {
        << BC::leave_fun
        << BC::ret;
 
-  checkInt(code(), 2);
+  checkInt(code.code(), 2);
 }
 
 TEST(Interpreter, two_fun) {
-  Builder f0, f1;
+  BasicBlock f0, f1;
 
   // inner fun
   f1 << BC::enter_fun   << (int)0
@@ -26,17 +26,17 @@ TEST(Interpreter, two_fun) {
 
   // outer function
   f0 << BC::enter_fun     << (int)0
-     << BC::mkclosure     << f1()      << L({})
+     << BC::mkclosure     << f1.code()      << L({})
      << BC::call_generic  << (int)0
      << BC::leave_fun
      << BC::ret;
 
-  checkInt(f0(), 1);
+  checkInt(f0.code(), 1);
 }
 
 
 TEST(Interpreter, two_fun_prom) {
-  Builder f0, f1, p0;
+  BasicBlock f0, f1, p0;
 
   // Function is:
   //
@@ -68,20 +68,20 @@ TEST(Interpreter, two_fun_prom) {
   f0 << BC::enter_fun     << (int)0
      << BC::push          << C(666)
      << BC::store         << b
-     << BC::mkclosure     << f1()       << L({a})
+     << BC::mkclosure     << f1.code()       << L({a})
      << BC::store         << f
      // the call sequence
      << BC::load          << f          << BC::force
-     << BC::mkprom        << p0()                                   // push arg
+     << BC::mkprom        << p0.code()                              // push arg
      << BC::call_generic  << 1                                      // call
      << BC::leave_fun
      << BC::ret;
 
-  checkInt(f0(), 1332);
+  checkInt(f0.code(), 1332);
 }
 
 TEST(Interpreter, fastcall) {
-  Builder f0, f1;
+  BasicBlock f0, f1;
 
   // Demo faster calling conventions
   f1 << BC::mkenv
@@ -93,16 +93,16 @@ TEST(Interpreter, fastcall) {
      << BC::push           << C(1)
      << BC::push           << C(1)
      << BC::pushenv
-     << BC::call_fast      << f1()
+     << BC::call_fast      << f1.code()
      << BC::leave_fun
      << BC::ret;
 
-  checkInt(f0(), 2);
+  checkInt(f0.code(), 2);
 }
 
 
 TEST(Interpreter, fastcall_noenv) {
-  Builder f0, f1;
+  BasicBlock f0, f1;
 
   // Demo faster calling conventions: inner function has no env
   f1 << BC::add
@@ -111,9 +111,9 @@ TEST(Interpreter, fastcall_noenv) {
   f0 << BC::enter_fun    << (int)0
      << BC::push         << C(1)
      << BC::push         << C(1)
-     << BC::call_fast    << f1()
+     << BC::call_fast    << f1.code()
      << BC::leave_fun
      << BC::ret;
 
-  checkInt(f0(), 2);
+  checkInt(f0.code(), 2);
 }

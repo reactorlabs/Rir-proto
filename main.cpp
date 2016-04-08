@@ -3,9 +3,9 @@
 
 #include <iostream>
 
-const static Symbol* a = Symbols::intern("a");
-const static Symbol* b = Symbols::intern("b");
-const static Symbol* f = Symbols::intern("f");
+static Symbol* a = Symbols::intern("a");
+static Symbol* b = Symbols::intern("b");
+static Symbol* f = Symbols::intern("f");
 
 void eval(Code* c) {
   Interpreter i;

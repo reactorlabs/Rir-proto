@@ -3,7 +3,7 @@
 
 // f0 calling f1
 TEST(Args, missing) {
-  Builder f0, f1;
+  BasicBlock f0, f1;
 
   f1 << BC::enter_fun     << 2
      << BC::store         << b
@@ -15,7 +15,7 @@ TEST(Args, missing) {
      << BC::ret;
 
   f0 << BC::enter_fun      << (int)0
-     << BC::mkclosure      << f1()    << L({a, b})
+     << BC::mkclosure      << f1.code()    << L({a, b})
      << BC::push           << C(1)
      << BC::call_arg_adapt << 1
 
@@ -24,11 +24,11 @@ TEST(Args, missing) {
      << BC::leave_fun
      << BC::ret;
 
-  checkInt(f0(), 3);
+  checkInt(f0.code(), 3);
 }
 
 TEST(Args, named) {
-  Builder f0, f1;
+  BasicBlock f0, f1;
 
   f1 << BC::enter_fun     << 2
      << BC::store         << b
@@ -40,7 +40,7 @@ TEST(Args, named) {
      << BC::ret;
 
   f0 << BC::enter_fun            << (int)0
-     << BC::mkclosure            << f1()    << L({a, b})
+     << BC::mkclosure            << f1.code()    << L({a, b})
      << BC::push                 << C(2)
      << BC::push                 << C(1)
      << BC::call_name_arg_adapt  << L({b, a})
@@ -50,11 +50,11 @@ TEST(Args, named) {
      << BC::leave_fun
      << BC::ret;
 
-  checkInt(f0(), 3);
+  checkInt(f0.code(), 3);
 }
 
 TEST(Args, named_pos) {
-  Builder f0, f1;
+  BasicBlock f0, f1;
 
   f1 << BC::enter_fun     << 2
      << BC::store         << b
@@ -66,7 +66,7 @@ TEST(Args, named_pos) {
      << BC::ret;
 
   f0 << BC::enter_fun            << (int)0
-     << BC::mkclosure            << f1()    << L({a, b})
+     << BC::mkclosure            << f1.code()    << L({a, b})
      << BC::push                 << C(2)
      << BC::push                 << C(1)
      << BC::call_name_arg_adapt  << L({b, _})
@@ -76,11 +76,11 @@ TEST(Args, named_pos) {
      << BC::leave_fun
      << BC::ret;
 
-  checkInt(f0(), 3);
+  checkInt(f0.code(), 3);
 }
 
 TEST(Args, named_missing) {
-  Builder f0, f1;
+  BasicBlock f0, f1;
 
   f1 << BC::enter_fun     << 2
      << BC::store         << b
@@ -92,7 +92,7 @@ TEST(Args, named_missing) {
      << BC::ret;
 
   f0 << BC::enter_fun            << (int)0
-     << BC::mkclosure            << f1()    << L({a, b})
+     << BC::mkclosure            << f1.code()    << L({a, b})
      << BC::push                 << C(1)
      << BC::call_name_arg_adapt  << L({a})
 
@@ -101,6 +101,5 @@ TEST(Args, named_missing) {
      << BC::leave_fun
      << BC::ret;
 
-  checkInt(f0(), 3);
+  checkInt(f0.code(), 3);
 }
-

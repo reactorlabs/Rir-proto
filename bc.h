@@ -111,6 +111,11 @@ enum class BC : B {
   // stack: ?
   call_name_arg_adapt,
 
+  // jump to a label
+  // immediate: offset: int
+  // stack: 0
+  jump,
+
   num_of
 };
 
@@ -144,6 +149,7 @@ static ImmediateType BC_immediate[(B)BC::num_of] = {
   ImmediateType::None,
   ImmediateType::Unsigned,
   ImmediateType::Vector,
+  ImmediateType::None,
 };
 
 class BCVerifier {

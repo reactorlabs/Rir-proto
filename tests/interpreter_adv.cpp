@@ -11,7 +11,7 @@ TEST(Interpreter, capture) {
   // c <- f(b + b)
   // c()
 
-  Builder f0, f1, f2, p0;
+  BasicBlock f0, f1, f2, p0;
 
   f2 << BC::enter_fun   << (int)0
      << BC::load << a << BC::force
@@ -21,7 +21,7 @@ TEST(Interpreter, capture) {
   f1 << BC::enter_fun << 1
      << BC::store << a
      // body
-     << BC::mkclosure << f2()       << L({})
+     << BC::mkclosure << f2.code()       << L({})
      << BC::store << g
      << BC::load << g << BC::force
      << BC::leave_fun
@@ -35,12 +35,12 @@ TEST(Interpreter, capture) {
      << BC::ret;
 
   f0 << BC::enter_fun << (int)0
-     << BC::mkclosure << f1()       << L({a})
+     << BC::mkclosure << f1.code()       << L({a})
      << BC::store << f
      << BC::push << C(22)
      << BC::store << b
      << BC::load << f << BC::force
-     << BC::mkprom << p0()
+     << BC::mkprom << p0.code()
      << BC::call_generic << 1
      << BC::store << c
      << BC::load << c << BC::force
@@ -48,5 +48,5 @@ TEST(Interpreter, capture) {
      << BC::leave_fun
      << BC::ret;
 
-  checkInt(f0(), 44);
+  checkInt(f0.code(), 44);
 }

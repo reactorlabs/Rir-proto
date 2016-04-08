@@ -204,6 +204,12 @@ Value* Interpreter::operator () (Closure* cls) {
         break;
       }
 
+      case BC::jump: {
+        int off = immediate<int>();
+        pc += off;
+        break;
+      }
+
       default:
         std::cout << "Invalid BC " << *(uint8_t*)pc << "\n";
         assert(false);
